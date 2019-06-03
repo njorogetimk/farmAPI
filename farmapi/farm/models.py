@@ -79,7 +79,7 @@ class Condition(db.Model):
 
     # Relationships
     day = db.relationship('Day', backref=db.backref('condition', lazy='dynamic'))
-    day_no = db.Column(db.String, db.ForeignKey('day.day'))
+    day_no = db.Column(db.String(10), db.ForeignKey('day.day'))
 
     def __init__(self, day, temp, humidity, time):
         self.temp = temp
