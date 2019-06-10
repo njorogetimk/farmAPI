@@ -109,7 +109,7 @@ def get_days(house_name, crop_no):
     if not crop:
         return jsonify({"Message": "Crop {} of house {} not found".format(crop_no, house_name)}), 404
 
-    days = crop.day.order_by('day').all()
+    days = crop.day.all()
     result = days_schema.dump(days)
     return jsonify(result.data)
 
@@ -180,7 +180,7 @@ def get_condition_crop(house_name, crop_no):
     crop = house.crop.filter_by(crop_number=crop_no).first()
     if not crop:
         return jsonify({"Message": "Crop not present"}), 404
-    days = crop.day.order_by('day').all()
+    days = crop.day.all()
     condDays = {}
     i = 0
     for day in days:
@@ -252,7 +252,7 @@ def get_harvest_crop(house_name, crop_no):
     crop = house.crop.filter_by(crop_number=crop_no).first()
     if not crop:
         return jsonify({"Message": "Crop number %s not found for house %s" % (crop_no, house_name)}), 404
-    days = crop.day.order_by('day').all()
+    days = crop.day.all()
     harvest_days = {}
     for day in days:
         day_no = day.day
@@ -328,7 +328,7 @@ def get_activities(house_name, crop_no):
     if not crop:
         return jsonify({"Message": "Crop number %s not found for house %s" % (crop_no, house_name)}), 404
 
-    days = crop.day.order_by('day').all()
+    days = crop.day.all()
     actv_days = {}
     for day in days:
         day_no = day.day
