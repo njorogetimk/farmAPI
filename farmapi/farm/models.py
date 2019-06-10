@@ -46,22 +46,25 @@ class Crop(db.Model):
 class Day(db.Model):
     """
     Day of the crop
-    day: Day of the crop - String
+    day: Day of the crop - String with house name and crop number appended
     crop: The crop object
+    date: Date of the day
     """
     id = db.Column(db.Integer, primary_key=True)
     day = db.Column(db.String(10), unique=True)
+    date = db.Column(db.String)
 
     # Relationships
     crop = db.relationship('Crop', backref=db.backref('day', lazy='dynamic'))
     crop_number = db.Column(db.String, db.ForeignKey('crop.crop_number'))
 
-    def __init__(self, crop, day):
+    def __init__(self, crop, day, date):
         self.day = day
         self.crop = crop
+        self.date = date
 
     def __repr__(self):
-        return '<Day {}>'.format(self.day)
+        return '<Day {}, Date {}>'.format(self.day, self.date)
 
 
 class Condition(db.Model):
@@ -73,16 +76,16 @@ class Condition(db.Model):
     day: Day in the crop calendar
     """
     id = db.Column(db.Integer, primary_key=True)
-    temp = db.Column(db.Float)
-    humidity = db.Column(db.Float)
-    time = db.Column(db.String(20))
+    temperature = db.Column(db.Float, nullable=True)
+    humidity = db.Column(db.Float, nullable=True)
+    time = db.Column(db.String(20), nullable=True)
 
     # Relationships
     day = db.relationship('Day', backref=db.backref('condition', lazy='dynamic'))
     day_no = db.Column(db.String(10), db.ForeignKey('day.day'))
 
     def __init__(self, day, temp, humidity, time):
-        self.temp = temp
+        self.temperature = temp
         self.humidity = humidity
         self.time = time
         self.day = day
@@ -94,21 +97,21 @@ class Condition(db.Model):
 class Harvest(db.Model):
     """
     Harvest table
-    panets: number of panets harvested in a day
+    punnets: number of punnets harvested in a day
     """
     id = db.Column(db.Integer, primary_key=True)
-    panets = db.Column(db.Integer)
+    punnets = db.Column(db.Integer, nullable=True)
 
     # Relationships
     day = db.relationship('Day', backref=db.backref('harvest', lazy='dynamic'))
     day_no = db.Column(db.String, db.ForeignKey('day.day'))
 
-    def __init__(self, day, panets):
-        self.panets = panets
+    def __init__(self, day, punnets):
+        self.punnets = punnets
         self.day = day
 
     def __repr__(self):
-        return '<Harvest {}>'.format(self.panets)
+        return '<Harvest {}>'.format(self.punnets)
 
 
 class Activities(db.Model):
@@ -118,21 +121,27 @@ class Activities(db.Model):
     description: A short description of the activity
     """
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(100))
+    description = db.Column(db.String(100), nullable=True)
 
     # Relationships
-    house = db.relationship('House', backref=db.backref('activities', lazy='dynamic'))
-    house_name = db.Column(db.String, db.ForeignKey('house.name'))
-    crop = db.relationship('Crop', backref=db.backref('activities', lazy='dynamic'))
-    crop_number = db.Column(db.String, db.ForeignKey('crop.crop_number'))
     day = db.relationship('Day', backref=db.backref('activities', lazy='dynamic'))
     day_no = db.Column(db.String, db.ForeignKey('day.day'))
 
+    def __init__(self, day, description):
+        self.day = day
+        self.description = description
+
     def __repr__(self):
-        return '<Activity on {}>'.format(self.day)
+        return '<Activity on {}>'.format(self.day_no)
+
 
 
 # The Schemas for serialization
+class HouseSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'name')
+
+
 class CropSchema(ma.Schema):
     class Meta:
         fields = ('crop_name', 'crop_number', 'house_name', 'start_date')
@@ -140,19 +149,19 @@ class CropSchema(ma.Schema):
 
 class DaySchema(ma.Schema):
     class Meta:
-        fields = ('day', 'crop_number')
+        fields = ('day', 'crop_number', 'date')
 
 
 class ConditionSchema(ma.Schema):
     class Meta:
-        fields = ('temp', 'humidity', 'time', 'day_no')
+        fields = ('temperature', 'humidity', 'time', 'day_no')
 
 
 class HarvestSchema(ma.Schema):
     class Meta:
-        fields = ('panets', 'day_no')
+        fields = ('punnets', 'day_no')
 
 
 class ActivitiesSchema(ma.Schema):
     class Meta:
-        fields = ('crop_number', 'day_no', 'description')
+        fields = ('day_no', 'description')
